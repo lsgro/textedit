@@ -1,0 +1,13 @@
+
+html, body {
+    height: 100%;
+    margin: 0px;
+}
+
+div#edit {
+    width: 100%;
+    height: 100%;
+    background-color: grey;
+    font-family: monospace;
+    font-size: 14pt;
+}
