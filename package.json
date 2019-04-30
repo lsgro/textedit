@@ -1,0 +1,25 @@
+{
+  "name": "viewport",
+  "version": "0.1.0",
+  "description": "Text editor model",
+  "main": "viewport.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lsgro/viewport.git"
+  },
+  "keywords": [
+    "editor"
+  ],
+  "author": "LSgro",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/lsgro/viewport/issues"
+  },
+  "homepage": "https://github.com/lsgro/viewport#readme",
+  "devDependencies": {
+    "mocha": "^6.1.4"
+  }
+}
