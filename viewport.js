@@ -9,10 +9,18 @@ class Viewport {
 	this.home();
     }
 
+    size() {
+	return this.buffer.length;
+    }
+    
     reduce(f) {
 	return this.buffer.reduce(f);
     }
 
+    map(f) {
+	return this.buffer.map(f);
+    }
+    
     home() {
 	this.pointRow = 0;
 	this.pointCol = 0;
@@ -83,7 +91,7 @@ class Viewport {
     }
 
     moveLeft() {
-	if (this.pointCol > 0) {
+	if (this.pointCol > 1) {
 	    this.pointCol -= 1;
 	} else if (this.pointRow > 0) {
 	    this.pointRow -= 1;

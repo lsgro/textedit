@@ -14,11 +14,36 @@ function escapeHtml(text) {
   return text.replace(/[&<>"']/g, function(m) { return map[m]; }).replace(/\ /g, function() { return '&nbsp;' });
 }
 
-function buildHtml(pointRow, pointCol, caretClass) {
-    return function(text, row, rowIndex) {
-	var htmlRow = escapeHtml(row);
-	return text + "<br>" + htmlRow;
+function makeHtmlRow(pointRow, pointCol, pointerType) {
+    return function(row, rowIndex) {
+	var htmlRow;
+	console.log("Row index:", rowIndex, "pointRow:", pointRow);
+	if (rowIndex == pointRow) {
+	    console.log("Row length:", row.length, "point col:", pointCol);
+	    if (pointerType == "change") {
+		let segment1 = row.substring(0, pointCol-1),
+		    pointed = row.charAt(pointCol-1);
+		segment2 = row.substring(pointCol);
+		htmlRow = escapeHtml(segment1) + "<span class='caretChange'>" + escapeHtml(pointed) + "</span>" + escapeHtml(segment2);		
+	    } else {
+		if (row.length == pointCol) {
+		    htmlRow = escapeHtml(row) + "<span class='caretAppend'>&nbsp;</span>";
+		} else {
+		    let segment1 = row.substring(0, pointCol),
+			pointed = row.charAt(pointCol);
+		    segment2 = row.substring(pointCol+1);
+		    htmlRow = escapeHtml(segment1) + "<span class='caretAppend'>" + escapeHtml(pointed) + "</span>" + escapeHtml(segment2);
+		}
+	    }
+	} else {
+	    htmlRow = escapeHtml(row);
+	}
+	return htmlRow;
     }
+}
+
+function id(x) {
+    return x;
 }
 
 function setCursor(cursorType) {
@@ -27,9 +52,12 @@ function setCursor(cursorType) {
     
 }
 
+function joinRows(acc, row) {
+    return acc + "<br>" + row;
+}
+
 function redisplay() {
-    console.log(buffer.pointRow, buffer.pointCol);
-    var html = buffer.reduce(buildHtml(0, 0, null));
+    let html = buffer.map(makeHtmlRow(buffer.pointRow, buffer.pointCol, "change")).reduce(joinRows);
     viewport.innerHTML = html;
 }
 

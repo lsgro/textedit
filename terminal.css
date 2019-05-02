@@ -11,3 +11,7 @@ div#edit {
     font-family: monospace;
     font-size: 14pt;
 }
+
+span.caretChange {
+    background-color: yellow;
+}

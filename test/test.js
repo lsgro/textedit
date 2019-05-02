@@ -63,9 +63,18 @@ describe('Viewport', function() {
       it('should move pointer to the left', function() {
 	  var o = viewport.create();
 	  o.addChar("X");
+	  o.addChar("X");
 	  o.moveLeft();
 	  o.addChar("Y");
-	  assert.equal("YX", mkString(o));
+	  assert.equal("XYX", mkString(o));
+      });
+      it('should not move pointer to the left when at beginning or row', function() {
+	  var o = viewport.create();
+	  o.addChar("X");
+	  o.moveLeft();
+	  assert.equal(1, o.pointCol);
+	  o.moveLeft();
+	  assert.equal(1, o.pointCol);
       });
   });
   describe('#moveRight()', function() {
