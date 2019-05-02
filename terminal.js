@@ -11,16 +11,25 @@ function escapeHtml(text) {
     "'": '&#039;'
   };
 
-  return text.replace(/[&<>"']/g, function(m) { return map[m]; });
+  return text.replace(/[&<>"']/g, function(m) { return map[m]; }).replace(/\ /g, function() { return '&nbsp;' });
 }
 
-function joinRows(total, currentValue) {
-    console.log(currentValue);
-    return total + "<br>" + escapeHtml(currentValue);
+function buildHtml(pointRow, pointCol, caretClass) {
+    return function(text, row, rowIndex) {
+	var htmlRow = escapeHtml(row);
+	return text + "<br>" + htmlRow;
+    }
+}
+
+function setCursor(cursorType) {
+    let pRow = buffer.pointRow,
+	pCol = buffer.pointCol;
+    
 }
 
 function redisplay() {
-    var html = buffer.reduce(joinRows);
+    console.log(buffer.pointRow, buffer.pointCol);
+    var html = buffer.reduce(buildHtml(0, 0, null));
     viewport.innerHTML = html;
 }
 
