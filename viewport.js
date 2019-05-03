@@ -74,7 +74,6 @@ class Viewport {
 		this.buffer.splice(this.pointRow, 1);
 		this.pointRow -= 1;
 		this.pointCol = this.buffer[this.pointRow].length;
-		this.removeCharLeft();
             }
 	}
     }
@@ -91,7 +90,7 @@ class Viewport {
     }
 
     moveLeft() {
-	if (this.pointCol > 1) {
+	if (this.pointCol > 0) {
 	    this.pointCol -= 1;
 	} else if (this.pointRow > 0) {
 	    this.pointRow -= 1;

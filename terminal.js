@@ -14,26 +14,19 @@ function escapeHtml(text) {
   return text.replace(/[&<>"']/g, function(m) { return map[m]; }).replace(/\ /g, function() { return '&nbsp;' });
 }
 
-function makeHtmlRow(pointRow, pointCol, pointerType) {
+function makeHtmlRow(pointRow, pointCol, pointerClass) {
     return function(row, rowIndex) {
 	var htmlRow;
 	console.log("Row index:", rowIndex, "pointRow:", pointRow);
 	if (rowIndex == pointRow) {
 	    console.log("Row length:", row.length, "point col:", pointCol);
-	    if (pointerType == "change") {
-		let segment1 = row.substring(0, pointCol-1),
-		    pointed = row.charAt(pointCol-1);
-		segment2 = row.substring(pointCol);
-		htmlRow = escapeHtml(segment1) + "<span class='caretChange'>" + escapeHtml(pointed) + "</span>" + escapeHtml(segment2);		
+	    if (row.length == pointCol) {
+		htmlRow = escapeHtml(row) + `<span id='pointer' class='${pointerClass}'>&nbsp;</span>`;
 	    } else {
-		if (row.length == pointCol) {
-		    htmlRow = escapeHtml(row) + "<span class='caretAppend'>&nbsp;</span>";
-		} else {
-		    let segment1 = row.substring(0, pointCol),
-			pointed = row.charAt(pointCol);
-		    segment2 = row.substring(pointCol+1);
-		    htmlRow = escapeHtml(segment1) + "<span class='caretAppend'>" + escapeHtml(pointed) + "</span>" + escapeHtml(segment2);
-		}
+		let segment1 = row.substring(0, pointCol),
+		    pointed = row.charAt(pointCol);
+		segment2 = row.substring(pointCol+1);
+		htmlRow = escapeHtml(segment1) + `<span id='pointer' class='${pointerClass}'>` + escapeHtml(pointed) + "</span>" + escapeHtml(segment2);
 	    }
 	} else {
 	    htmlRow = escapeHtml(row);
@@ -57,8 +50,14 @@ function joinRows(acc, row) {
 }
 
 function redisplay() {
-    let html = buffer.map(makeHtmlRow(buffer.pointRow, buffer.pointCol, "change")).reduce(joinRows);
+    let html = buffer.map(makeHtmlRow(buffer.pointRow, buffer.pointCol, "caretInsert")).reduce(joinRows);
     viewport.innerHTML = html;
+    let pointerRect = document.getElementById('pointer').getBoundingClientRect(),
+	caret = document.getElementById('caret'),
+	pointerTop = pointerRect.top + 'px',
+	pointerLeft = pointerRect.left + 'px';
+    caret.style.top = pointerTop;
+    caret.style.left = pointerLeft;
 }
 
 function handleKeys(e) {
