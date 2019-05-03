@@ -17,9 +17,7 @@ function escapeHtml(text) {
 function makeHtmlRow(pointRow, pointCol, pointerClass) {
     return function(row, rowIndex) {
 	var htmlRow;
-	console.log("Row index:", rowIndex, "pointRow:", pointRow);
 	if (rowIndex == pointRow) {
-	    console.log("Row length:", row.length, "point col:", pointCol);
 	    if (row.length == pointCol) {
 		htmlRow = escapeHtml(row) + `<span id='pointer' class='${pointerClass}'>&nbsp;</span>`;
 	    } else {
@@ -50,7 +48,7 @@ function joinRows(acc, row) {
 }
 
 function redisplay() {
-    let html = buffer.map(makeHtmlRow(buffer.pointRow, buffer.pointCol, "caretInsert")).reduce(joinRows);
+    let html = buffer.map(makeHtmlRow(buffer.pointRow, buffer.pointCol, "none")).reduce(joinRows);
     viewport.innerHTML = html;
     let pointerRect = document.getElementById('pointer').getBoundingClientRect(),
 	caret = document.getElementById('caret'),

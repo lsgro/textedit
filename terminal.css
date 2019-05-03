@@ -32,6 +32,6 @@ div#caret {
     color: yellow;
 }
 
-span.caretChange {
+span.selected {
     background-color: yellow;
 }
