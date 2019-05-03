@@ -1,6 +1,7 @@
 let model = require("./viewport.js");
 let buffer = model.create();
 let tab = "\t";
+let ignoredKeys = new Set(["Shift", "Escape", "Control", "Meta", "Alt"]);
 
 function escapeHtml(text) {
   var map = {
@@ -27,29 +28,13 @@ function makeHtmlRow(pointRow, pointCol, pointerClass) {
 		htmlRow = escapeHtml(segment1) + `<span id='pointer' class='${pointerClass}'>` + escapeHtml(pointed) + "</span>" + escapeHtml(segment2);
 	    }
 	} else {
-	    htmlRow = escapeHtml(row);
+	    htmlRow = row === "" ? '&nbsp;' : escapeHtml(row);
 	}
 	return htmlRow;
     }
 }
 
-function id(x) {
-    return x;
-}
-
-function setCursor(cursorType) {
-    let pRow = buffer.pointRow,
-	pCol = buffer.pointCol;
-    
-}
-
-function joinRows(acc, row) {
-    return acc + "<br>" + row;
-}
-
-function redisplay() {
-    let html = buffer.map(makeHtmlRow(buffer.pointRow, buffer.pointCol, "none")).reduce(joinRows);
-    viewport.innerHTML = html;
+function placeCaret() {
     let pointerRect = document.getElementById('pointer').getBoundingClientRect(),
 	caret = document.getElementById('caret'),
 	pointerTop = pointerRect.top + 'px',
@@ -58,40 +43,112 @@ function redisplay() {
     caret.style.left = pointerLeft;
 }
 
+function updateScreen(updates) {
+    for (var i = 0; i < updates.length; i++) {
+	
+	toDelete = updates[i].to_delete;
+	toChange = updates[i].to_change;
+	toInsert = updates[i].to_insert;
+	
+	if (toDelete !== undefined) {
+	    let rows = document.getElementsByClassName('row');
+	    if (Array.isArray(toDelete)) {
+		for (var j = 0; j < toDelete.length; j++) {		  
+		    let row = rows[rowIndex],
+			rowIndex = toDelete[j];
+		    row.parentElement.removeChild(row);
+		}
+	    } else {
+		let row = rows[toDelete];
+		row.parentElement.removeChild(row);
+	    }
+	}
+	if (toChange !== undefined) {
+	    let rows = document.getElementsByClassName('row');
+	    if (Array.isArray(toChange)) {
+		for (var j = 0; j < toChange.length; j++) {
+		    let rowIndex = toChange[j],
+			row = rows[rowIndex];
+		    row.innerHTML = makeHtmlRow(buffer.pointRow, buffer.pointCol, "none")(buffer.get(rowIndex), rowIndex);
+		}
+	    } else {
+		let rowIndex = toChange,
+		    row = rows[rowIndex],
+		    html = makeHtmlRow(buffer.pointRow, buffer.pointCol, "none")(buffer.get(rowIndex), rowIndex);
+		row.innerHTML = html;
+	    }		
+	}
+	if (toInsert !== undefined) {
+	    let rows = document.getElementsByClassName('row');
+	    if (Array.isArray(toInsert)) {
+		for (var j = 0; j < toInsert; j++) {
+		    let rowIndex = toInsert[j],
+			row = document.createElement("div");
+		    row.classList.add('row');
+		    row.innerHTML = makeHtmlRow(buffer.pointRow, buffer.pointCol, "none")(buffer.get(rowIndex), rowIndex);
+		    if (rowIndex >= rows.length) {
+			rows[0].parentElement.appendChild(row);
+		    } else {
+			let sibling = rows[rowIndex];
+			sibling.parentElement.insertBefore(row, sibling);
+		    }
+		}
+	    } else {
+		let rowIndex = toInsert,
+		    row = document.createElement("div");
+		row.classList.add('row');
+		let html = makeHtmlRow(buffer.pointRow, buffer.pointCol, "none")(buffer.get(rowIndex), rowIndex);
+		row.innerHTML = html;
+		if (rowIndex >= rows.length) {
+		    document.getElementById('edit').appendChild(row);
+		} else {
+		    let sibling = rows[rowIndex];
+		    sibling.parentElement.insertBefore(row, sibling);
+		}		
+	    }
+	}
+    }
+    placeCaret();
+}
+
 function handleKeys(e) {
+    if (e.altKey && '0123456789'.indexOf(e.key) !== -1 || ignoredKeys.has(e.key)) {
+	return;
+    }
+
+    console.log(e);
+    
+    var updates;
+    
     switch (e.key) {
-    case "Shift":
-    case "Escape":
-    case "Control":
-        break;
     case "Backspace":
-        buffer.removeCharLeft();
+        updates = buffer.removeCharLeft();
         break;
     case "Delete":
-	buffer.removeCharRight();
+	updates = buffer.removeCharRight();
 	break;
     case "Enter":
-        buffer.newLine();
+        updates = buffer.newLine();
         break;
     case "Tab":
-        buffer.addChar(tab);
+        updates = buffer.addChar(tab);
         break;
     case "ArrowLeft":
-	buffer.moveLeft();
+	updates = buffer.moveLeft();
 	break;
     case "ArrowRight":
-	buffer.moveRight();
+	updates = buffer.moveRight();
 	break;
     case "ArrowUp":
-	buffer.moveUp();
+	updates = buffer.moveUp();
 	break;
     case "ArrowDown":
-	buffer.moveDown();
+	updates = buffer.moveDown();
 	break;
     default:
-        buffer.addChar(e.key);
+        updates = buffer.addChar(e.key);
     }
-    redisplay();
+    updateScreen(updates);
 }
 
 document.addEventListener('keydown', function (event) { 
@@ -99,16 +156,13 @@ document.addEventListener('keydown', function (event) {
 });
 
 document.addEventListener('keyup', function (event) {
-    console.log(event);
     event.preventDefault();
     handleKeys(event);
 });
 
 function init() {
     viewport = document.getElementById("edit");
-    redisplay();
+    updateScreen([{ "to_insert": 0 }]);
 }
 
 document.addEventListener('DOMContentLoaded', init, false);
-
-

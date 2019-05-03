@@ -1,12 +1,18 @@
 class Viewport {
 
     constructor() {
+	this.buffer = [];
 	this.clear();
     }
 
     clear() {
+	let deletedRows = [];
+	for (var i = this.buffer.length - 1; i >= 0; i--) {
+	    deleterRows.push(i);
+	}
 	this.buffer = [""];
 	this.home();
+	return [{ "to_delete": deletedRows }, { "to_change": 0 }];
     }
 
     size() {
@@ -20,15 +26,25 @@ class Viewport {
     map(f) {
 	return this.buffer.map(f);
     }
+
+    get(i) {
+	if (i >= 0 && i < this.buffer.length) {
+	    return this.buffer[i];
+	}
+    }
     
     home() {
+	let previousPointRow = this.pointRow;
 	this.pointRow = 0;
 	this.pointCol = 0;
+	return [{ "to_change": [previousPointRow,  this.pointRow] }];
     }
 
     last() {
+	let previousPointRow = this.pointRow;
 	this.pointRow = this.buffer.length - 1;
 	this.pointCol = this.buffer[this.pointRow].length;
+	return [{ "to_change": [previousPointRow, this.pointRow] }];
     }
     
     newLine() {
@@ -49,6 +65,7 @@ class Viewport {
 	}
 	this.pointRow += 1;
 	this.pointCol = 0;
+	return [{ "to_change": this.pointRow - 1 }, { "to_insert": this.pointRow }];
     }
 
     addChar(c) {
@@ -61,6 +78,7 @@ class Viewport {
 	}
 	this.buffer[this.pointRow] = nextLine;
 	this.pointCol += 1;
+	return [{ "to_change": this.pointRow }];
     }
 
     removeCharLeft() {
@@ -69,12 +87,16 @@ class Viewport {
             var nextLine = line.substring(0, this.pointCol - 1).concat(line.substring(this.pointCol));
             this.buffer[this.pointRow] = nextLine;
             this.pointCol -= 1;
+	    return [{ "to_change": this.pointRow }];
 	} else {
             if (this.pointRow > 0) {
 		this.buffer.splice(this.pointRow, 1);
 		this.pointRow -= 1;
 		this.pointCol = this.buffer[this.pointRow].length;
-            }
+		return [{ "to_delete": this.pointRow + 1}, { "to_change": this.pointRow }];
+	    } else {
+		return [];
+	    }
 	}
     }
 
@@ -83,27 +105,36 @@ class Viewport {
 	if (this.pointCol < line.length) {
 	    var nextLine = line.substring(0, this.pointCol).concat(line.substring(this.pointCol + 1));
 	    this.buffer[this.pointRow] = nextLine;
+	    return [{ "to_change": this.pointRow }];
 	} else {
 	    // TODO make it configurable
-	    this.removeCharLeft();
+	    return this.removeCharLeft();
 	}
     }
 
     moveLeft() {
 	if (this.pointCol > 0) {
 	    this.pointCol -= 1;
+	    return [{ "to_change": this.pointRow }];
 	} else if (this.pointRow > 0) {
 	    this.pointRow -= 1;
 	    this.pointCol = this.buffer[this.pointRow].length;
+	    return [{ "to_change": [this.pointRow, this.pointRow + 1] }];
+	} else {
+	    return [];
 	}
     }
 
     moveRight() {
 	if (this.pointCol < this.buffer[this.pointRow].length) {
 	    this.pointCol += 1;
+	    return [{ "to_change": this.pointRow }];
 	} else if (this.pointRow < this.buffer.length - 1) {
 	    this.pointRow += 1;
 	    this.pointCol = 0;
+	    return [{ "to_change": [this.pointRow, this.pointRow - 1] }];
+	} else {
+	    return [];
 	}
     }
 
@@ -111,6 +142,9 @@ class Viewport {
 	if (this.pointRow > 0) {
 	    this.pointRow -= 1;
 	    this.pointCol = Math.min(this.pointCol, this.buffer[this.pointRow].length);
+	    return [{ "to_change": [this.pointRow, this.pointRow + 1] }];
+	} else {
+	    return [];
 	}
     }
 
@@ -118,7 +152,10 @@ class Viewport {
 	if (this.pointRow < this.buffer.length - 1) {
 	    this.pointRow += 1;
 	    this.pointCol = Math.min(this.pointCol, this.buffer[this.pointRow].length);
-	}	
+	    return [{ "to_change": [this.pointRow, this.pointRow - 1] }];
+	} else {
+	    return [];
+	}
     }
 }
 
