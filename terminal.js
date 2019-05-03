@@ -62,6 +62,7 @@ function handleKeys(e) {
     switch (e.key) {
     case "Shift":
     case "Escape":
+    case "Control":
         break;
     case "Backspace":
         buffer.removeCharLeft();
