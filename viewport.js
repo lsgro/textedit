@@ -32,13 +32,13 @@ class Viewport {
     }
     
     newLine() {
-	if (this.pointCol == 0) {
+	if (this.pointCol === 0) {
             this.buffer.splice(this.pointRow, 0, "");
 	} else {
             var line = this.buffer[this.pointRow],
 		head,
 		tail;
-            if (this.pointCol == line.length) {
+            if (this.pointCol === line.length) {
 		head = line;
 		tail = "";
             } else {
@@ -54,7 +54,7 @@ class Viewport {
     addChar(c) {
 	var line = this.buffer[this.pointRow],
             nextLine;
-	if (this.pointCol == line.length) {
+	if (this.pointCol === line.length) {
             nextLine = line.concat(c);
 	} else {
             nextLine = line.substring(0, this.pointCol).concat(c).concat(line.substring(this.pointCol));
