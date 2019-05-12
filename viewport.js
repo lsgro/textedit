@@ -90,12 +90,10 @@ class Viewport {
 	        return [{ "to_change": this.pointRow }];
 	    } else {
             if (this.pointRow > 0) {
+	            this.pointCol = this.buffer[this.pointRow - 1].length;
 		        if (this.buffer[this.pointRow].length > 0) {
-		            this.pointCol = this.buffer[this.pointRow - 1].length;
 		            this.buffer[this.pointRow - 1] = this.buffer[this.pointRow - 1].concat(this.buffer[this.pointRow]);
-		        } else {
-		            this.pointCol = this.buffer[this.pointRow].length;
-		        }
+		        } 
 		        this.buffer.splice(this.pointRow, 1);
 		        this.pointRow -= 1;
 		        return [{ "to_delete": this.pointRow + 1}, { "to_change": this.pointRow }];
