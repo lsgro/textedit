@@ -72,9 +72,9 @@ describe('Viewport', function() {
 	  var o = viewport.create();
 	  o.addChar("X");
 	  o.moveLeft();
-	  assert.equal(1, o.pointCol);
+	  assert.equal(0, o.pointCol);
 	  o.moveLeft();
-	  assert.equal(1, o.pointCol);
+	  assert.equal(0, o.pointCol);
       });
   });
   describe('#moveRight()', function() {
