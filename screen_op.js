@@ -1,12 +1,78 @@
 
 function adaptPointerColumn(pointer, buffer) {
-    let row = pointer[0],
-	col = pointer[1],
-	bufRow = buffer[row];
+    const row = pointer[0],
+	  col = pointer[1],
+	  bufRow = buffer[row];
     if (col > bufRow.length) {
 	return [row, bufRow.length];
     } else {
 	return pointer;
+    }
+}
+
+function applyCommand(buffer, command) {
+    const verb = command[0];
+    switch(verb) {
+    case "ic": {
+	const pointer = command[1],
+	      row = pointer[0],
+	      col = pointer[1],
+	      chars = command[2],
+	      bufRow = buffer[row],
+	      newBufRow = bufRow.substr(0, col) + chars + bufRow.substr(col),
+	      newBuffer = buffer.slice(0);
+	newBuffer[row] = newBufRow;
+	return newBuffer;
+    }
+    case "dc": {
+	const pointer = command[1],
+	      row = pointer[0],
+	      col = pointer[1],
+	      chars = command[2],
+	      bufRow = buffer[row],
+	      newBufRow = bufRow.substr(0, col) + bufRow.substr(col + 1),
+	      newBuffer = buffer.slice(0);
+	newBuffer[row] = newBufRow;
+	return newBuffer;
+    }
+    case "il": {
+	const lineNo = command[1],
+	      newBuffer = buffer.slice(0);
+	newBuffer.splice(lineNo, 0, "");
+	return newBuffer;
+    }
+    case "dl": {
+	const lineNo = command[1],
+	      newBuffer = buffer.slice(0);
+	newBuffer.splice(lineNo, 1);
+	return newBuffer;
+    }
+    case "sl": {
+	const pointer = command[1],
+	      row = pointer[0],
+	      col = pointer[1],
+	      newBuffer = buffer.slice(0),
+	      line = buffer[row];
+	newBuffer.splice(row, 1, line.slice(0, col), line.slice(col));
+	return newBuffer;
+    }
+    case "jl": {
+	const lineNo = command[1],
+	      line1 = buffer[lineNo],
+	      line2 = buffer[lineNo + 1],
+	      compoundLine = line1 + line2,
+	      newBuffer = buffer.slice(0);
+	newBuffer.splice(lineNo, 2, compoundLine);
+	return newBuffer;
+    }
+    case "na":
+	if (command.length > 1) {
+	    console.log("No change to buffer: " + command[1]);
+	}
+	return buffer;
+    default:
+	console.error("Unkown verb: " + verb);
+	return buffer;
     }
 }
 
@@ -45,35 +111,35 @@ exports.ops = {
 
     // pointer moves
     pointerUp: function(pointer, buffer) {
-	let row = pointer[0];
+	const row = pointer[0];
 	if (row == 0) {
 	    return pointer;
 	} else {
-	    let newRow = row - 1,
-		col = pointer[1],
-		newPointer = [newRow, col];
+	    const newRow = row - 1,
+		  col = pointer[1],
+		  newPointer = [newRow, col];
 	    return adaptPointerColumn(newPointer, buffer);
 	}
     },
     pointerDown: function(pointer, buffer) {	    
-	let row = pointer[0];
+	const row = pointer[0];
 	if (row >= buffer.length - 1) {
 	    return pointer;
 	} else {
-	    let newRow = row + 1,
-		col = pointer[1],
-		newPointer = [newRow, col];
+	    const newRow = row + 1,
+		  col = pointer[1],
+		  newPointer = [newRow, col];
 	    return adaptPointerColumn(newPointer, buffer);
 	}
     },
     pointerLeft: function(pointer, buffer) {
-	let row = pointer[0],
-	    col = pointer[1];
+	const row = pointer[0],
+	      col = pointer[1];
 	if (col == 0) {
 	    if (row == 0) {
 		return pointer;
 	    } else { // move to end of previous line
-		let newRow = row - 1;
+		const newRow = row - 1;
 		return [newRow, buffer[newRow].length];
 	    }
 	} else {
@@ -81,9 +147,9 @@ exports.ops = {
 	}
     },
     pointerRight: function(pointer, buffer) {
-	let row = pointer[0],
-	    col = pointer[1],
-	    bufRow = buffer[row];
+	const row = pointer[0],
+	      col = pointer[1],
+	      bufRow = buffer[row];
 	if (col >= bufRow.length) {
 	    if (row >= buffer.length - 1) {
 		return pointer;
@@ -98,17 +164,17 @@ exports.ops = {
 
     // from edit actions to elementary command and new pointer
     insertChars: function(str, pointer, buffer) {
-	let row = pointer[0],
-	    col = pointer[1],
-	    newCol = col + str.length;
+	const row = pointer[0],
+	      col = pointer[1],
+	      newCol = col + str.length;
 	return [
 	    insertCharsCmd(pointer, str),
 	    [row, newCol]
 	];
     },
     backSpace: function(pointer, buffer) {
-	let row = pointer[0],
-	    col = pointer[1];
+	const row = pointer[0],
+	      col = pointer[1];
 	if (col == 0) {
 	    if (row == 0) {
 		return [
@@ -116,15 +182,15 @@ exports.ops = {
 		    pointer
 		];
 	    } else { // join lines
-		let newRow = row - 1,
-		    newCol = buffer[newRow].length;
+		const newRow = row - 1,
+		      newCol = buffer[newRow].length;
 		return [
 		    joinLinesCmd(newRow),
 		    [newRow, newCol]
 		];
 	    }
 	} else {
-	    let newPointer = [row, col - 1];
+	    const newPointer = [row, col - 1];
 	    return [
 		deleteCharCmd(newPointer),
 		newPointer
@@ -132,11 +198,11 @@ exports.ops = {
 	}
     },
     newLine: function(pointer, buffer) {
-	let row = pointer[0],
-	    col = pointer[1],
-	    bufRow = buffer[row];
+	const row = pointer[0],
+	      col = pointer[1],
+	      bufRow = buffer[row];
 	if (col >= bufRow.length) {
-	    let newRow = row + 1;
+	    const newRow = row + 1;
 	    return [
 		insertLineCmd(newRow),
 		[newRow, 0]
@@ -147,5 +213,8 @@ exports.ops = {
 		[row + 1, 0]
 	    ];
 	}
+    },
+    updateBuffer: function(commands, buffer) {
+	return commands.reduce(applyCommand, buffer);
     }
 }
