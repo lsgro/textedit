@@ -76,6 +76,13 @@ function applyCommand(buffer, command) {
     }
 }
 
+function applyCommandAndAccumulate(buffers, command) {
+    let buffer = buffers[buffers.length - 1],
+	nextBuffer = applyCommand(buffer, command);
+    buffers.push(nextBuffer);
+    return buffers;
+}
+
 // elementary screen edit commands
 function nullCmd(message) {
     if (message === undefined) {
@@ -214,7 +221,13 @@ exports.ops = {
 	    ];
 	}
     },
+    updateBuffer1Cmd: function(command, buffer) {
+	return applyCommand(buffer, command);
+    },
     updateBuffer: function(commands, buffer) {
 	return commands.reduce(applyCommand, buffer);
+    },
+    updateBufferAndAccumulate: function(commands, buffer) {
+	return commands.reduce(applyCommandAndAccumulate, [buffer]);
     }
 }
