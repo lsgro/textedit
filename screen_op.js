@@ -190,9 +190,10 @@ exports.ops = {
 		];
 	    } else { // join lines
 		const newRow = row - 1,
-		      newCol = buffer[newRow].length;
+		      newCol = buffer[newRow].length,
+		      command = buffer[row].length == 0 ? deleteLineCmd(row) : joinLinesCmd(newRow);
 		return [
-		    joinLinesCmd(newRow),
+		    command,
 		    [newRow, newCol]
 		];
 	    }
