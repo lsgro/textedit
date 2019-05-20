@@ -71,7 +71,7 @@ function applyCommand(buffer, command) {
 	}
 	return buffer;
     default:
-	console.error("Unkown verb: " + verb);
+	console.error("Wrong command:", command);
 	return buffer;
     }
 }
@@ -222,11 +222,9 @@ exports.ops = {
 	    ];
 	}
     },
-    updateBuffer1Cmd: function(command, buffer) {
-	return applyCommand(buffer, command);
-    },
     updateBuffer: function(commands, buffer) {
-	return commands.reduce(applyCommand, buffer);
+	const cmdArray = commands.constructor === Array && commands[0].constructor === Array ? commands : [commands];
+	return cmdArray.reduce(applyCommand, buffer);
     },
     updateBufferAndAccumulate: function(commands, buffer) {
 	return commands.reduce(applyCommandAndAccumulate, [buffer]);
